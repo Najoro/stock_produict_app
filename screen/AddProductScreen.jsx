@@ -118,6 +118,9 @@ const AddProductScreen = ({route}) => {
         onChangeText={setDescription}
       />
 
+      <TouchableOpacity style={styles.addButton} onPress={handleAddProduct}>
+        <Text style={styles.addButtonText}>ajouter</Text>
+      </TouchableOpacity>
 
     </ScrollView>
   );
