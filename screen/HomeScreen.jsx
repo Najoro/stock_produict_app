@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -8,65 +8,31 @@ import {
   Image,
   StyleSheet,
   StatusBar,
+  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { getProductInDataBase } from '../services/dataBaseServices';
-
-const PRODUCTS = [
-  {
-    id: '1',
-    name: 'T-Shirt',
-    stock: 25,
-    image: 'https://img.icons8.com/color/96/t-shirt.png',
-  },
-  {
-    id: '2',
-    name: 'Smartphone',
-    stock: 10,
-    image: 'https://img.icons8.com/color/96/iphone13.png',
-  },
-  {
-    id: '3',
-    name: 'Running Shoes',
-    stock: 8,
-    image: 'https://img.icons8.com/color/96/running-shoes.png',
-  },
-  {
-    id: '4',
-    name: 'Chair',
-    stock: 4,
-    image: 'https://img.icons8.com/color/96/chair.png',
-  },
-];
+import { useSQLiteContext } from 'expo-sqlite';
+import ListProductComponent from '../src/components/ListProductComponent';
+import { SQLiteService } from '../services/dataBaseServices';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    (async () => {
-      const getProductInDB = await getProductInDataBase();
-      if (getProductInDB) {
+  const dataBase = useSQLiteContext();
+  useFocusEffect(
+    useCallback(() => {
+      (async() => {
+        const getProductInDB = await dataBase.getAllAsync("SELECT * FROM products");
         setProducts(getProductInDB);
-      }
-    })();
-  }, []);
-
+      })()
+    }, [])
+  )
+  
   const handleClick = () => {
     navigation.navigate('AddProduct');
   };
-
-  const renderProduct = ({ item }) => (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8}>
-      <Image source={{ uri: item.image }} style={styles.cardImage} />
-      <View style={styles.cardInfo}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardStock}>In Stock: {item.stock}</Text>
-      </View>
-      <Text style={styles.cardArrow}>›</Text>
-    </TouchableOpacity>
-  );
-
+    
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#2979FF" barStyle="light-content" />
@@ -77,13 +43,7 @@ const HomeScreen = () => {
         <Text style={styles.addButtonText}>+ Add Product</Text>
       </TouchableOpacity>
 
-      <FlatList
-        data={PRODUCTS}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
-      />
+      <ListProductComponent products={products} />
     </SafeAreaView>
   );
 };
@@ -118,42 +78,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    marginHorizontal: 20,
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 4,
-  },
-  cardImage: {
-    width: 50,
-    height: 50,
-    marginRight: 15,
-  },
-  cardInfo: {
-    flex: 1,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  cardStock: {
-    fontSize: 14,
-    color: '#777',
-  },
-  cardArrow: {
-    fontSize: 24,
-    color: '#aaa',
-    fontWeight: 'bold',
-  },
+  
+  
 });
 
 export default HomeScreen;

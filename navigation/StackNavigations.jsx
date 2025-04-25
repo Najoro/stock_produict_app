@@ -5,6 +5,7 @@ import HomeScreen from '../screen/HomeScreen';
 import AddProductScreen from '../screen/AddProductScreen';
 import { SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
 import { initDB } from '../services/dataBaseServices';
+import ProductScreen from '../screen/ProductScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -15,6 +16,7 @@ const StackNavigations = () => {
       <Stack.Navigator initialRouteName='Home'>
         <Stack.Screen name='Home' component={HomeScreen} options={{headerShown : false}} />
         <Stack.Screen name='AddProduct' component={AddProductScreen} options={{headerShown : false}} />
+        <Stack.Screen name='Product' component={ProductScreen} options={{headerTitle: "Produit"}} />
       </Stack.Navigator>
     </SQLiteProvider>
   )
