@@ -1,145 +1,206 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import React, { useCallback, useState } from 'react'
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Animated, ActivityIndicator, Alert } from 'react-native';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
+import EditProduct from '../src/Products/EditProduct';
+import DeleteProduct from '../src/Products/DeleteProduct';
 
-const editProduct = ({id, navigation}) =>{
-  navigation.navigate("AddProduct", {id : id})
-}
 
-const deleteProduct = async({id,dataBase}) =>{  
-  try{
-    await dataBase.runAsync("DELETE FROM products WHERE id = ?", id)
-  }catch(e){
-    console.log("erreur lors de la suppression :", e);
-    
-  }
-}
-
-const ProductScreen = ({route}) => {
-  const {id} = route.params;
-  const [product, setProduct] = useState({});
+const ProductScreen = ({ route }) => {
+  const { id } = route.params;
+  const [product, setProduct] = useState(null);
   const dataBase = useSQLiteContext();
   const navigation = useNavigation();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   useFocusEffect(
     useCallback(() => {
-      (async() => {
-        const getProductInDB = await dataBase.getAllAsync("SELECT * FROM products WHERE id = ?", id)
+      (async () => {
+        const getProductInDB = await dataBase.getAllAsync("SELECT * FROM products WHERE id = ?", id);
         setProduct(getProductInDB[0]);
-      })()
+      })();
     }, [])
-  )
+  );
 
-  const goHome =() => {
-    navigation.navigate('Home')
+  useEffect(() => {
+    if (product) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [product]);
+
+  const goHome = () => {
+    navigation.navigate('HomeScreen');
+  };
+
+  if (!product) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
   }
-  
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+        <BlurView intensity={80} tint="light" style={styles.blurContainer}>
 
-      <Image
-        source={{uri :product.image}} // remplace par ton image locale ou URI
-        style={styles.image}
-      />
+          <Image
+            source={{ uri: product.image }}
+            style={styles.image}
+          />
 
-      <Text style={styles.title}>{product.name}</Text>
-      <Text style={styles.stock}>nombre de stock : {product.stock}</Text>
+          <Text style={styles.title}>{product.name}</Text>
 
-      <View style={styles.prixContainer}>
-        <Text style={styles.descriptionTitle}>Prix</Text>
-        <Text style={styles.descriptionText}>{product.amount} Ar</Text>
-      </View>
+          <View style={styles.separator} />
 
-      <View style={styles.descriptionContainer}>
-        <Text style={styles.descriptionTitle}>Description</Text>
-        <Text style={styles.descriptionText}>{product.description}</Text>
-      </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Stock :</Text>
+            <Text style={styles.detailValue}> {product.stock} unités</Text>
+          </View>
 
-      <View style={styles.actionsButtons}>  
-        <TouchableOpacity style={styles.editButton} onPress={() => {editProduct({id,navigation}, goHome())}}>
-          <Text style={styles.editButtonText}>Editer</Text>
-        </TouchableOpacity>
-      
-        <TouchableOpacity style={[styles.editButton, styles.buttonDelete]} onPress={() => { deleteProduct({id,dataBase}), goHome() }}>
-          <Text style={styles.editButtonText}>Supprimer</Text>
-        </TouchableOpacity>
-        
-      </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Prix :</Text>
+            <Text style={styles.detailValue}>{product.amount} Ar</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Catégorie :</Text>
+            <Text style={styles.detailValue}>{product.category || 'Non spécifiée'}</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Marque :</Text>
+            <Text style={styles.detailValue}>{product.brand || 'Non spécifiée'}</Text>
+          </View>
+
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Description</Text>
+            <Text style={styles.descriptionText}>{product.description || 'Aucune description.'}</Text>
+          </View>
+
+          <View style={styles.actionsButtons}>
+            <TouchableOpacity style={styles.editButton} onPress={() => EditProduct({ id, navigation })}>
+              <Text style={styles.editButtonText}>Éditer</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.editButton, styles.buttonDelete]} onPress={() => DeleteProduct({ id, dataBase, goHome })}>
+              <Text style={styles.editButtonText}>Supprimer</Text>
+            </TouchableOpacity>
+          </View>
+
+        </BlurView>
+      </Animated.View>
     </ScrollView>
   );
-}
+};
 
-export default ProductScreen
+export default ProductScreen;
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#f0f4f7',
     flexGrow: 1,
   },
-  backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 10,
+  card: {
+    width: '100%',
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginTop: 20,
+    backgroundColor: '#ffffffcc',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
   },
-  backText: {
-    color: '#007AFF',
-    fontSize: 17,
+  blurContainer: {
+    padding: 20,
   },
   image: {
-    width: 250,
+    width: '100%',
     height: 250,
-    resizeMode: 'contain',
-    marginVertical: 20,
+    borderRadius: 15,
+    marginBottom: 20,
+    resizeMode: 'cover',
   },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   stock: {
     fontSize: 16,
-    color: '#777',
-    marginBottom: 20,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 10,
   },
-  prixContainer :{
-    width: '100%',
-    display: "flex",
-    flexDirection: "row",
-    gap:10,
+  separator: {
+    height: 1,
+    backgroundColor: '#ccc',
+    marginVertical: 10,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 6,
+  },
+  detailLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#555',
+  },
+  detailValue: {
+    fontSize: 16,
+    color: '#222',
   },
   descriptionContainer: {
-    width: '100%',
-    marginBottom: 20,
-    gap:10,
+    marginTop: 20,
   },
   descriptionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  descriptionText: {
-    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 5,
     color: '#333',
   },
-  actionsButtons : {
-    display: "flex",
-    flexDirection: "row",
-    gap: 5,
-    justifyContent: "space-between",
-    alignItems: "center",
+  descriptionText: {
+    fontSize: 15,
+    color: '#555',
+  },
+  actionsButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    gap: 10,
   },
   editButton: {
+    flex: 1,
     backgroundColor: '#007AFF',
     paddingVertical: 12,
-    paddingHorizontal: 50,
     borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonDelete: {
+    backgroundColor: '#FF3B30',
   },
   editButtonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  buttonDelete: {
-    backgroundColor: "red",
-  }
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f4f7',
+  },
 });

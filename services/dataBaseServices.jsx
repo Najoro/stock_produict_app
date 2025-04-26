@@ -35,3 +35,41 @@ export const getAllProducts = async ({dataBase}) => {
   }
 };
 
+export const InsertProduct = async(dataBase, data = []) => {
+  try {
+    await dataBase.runAsync(`
+      INSERT INTO 
+      products (name, stock, description, image,amount) 
+      VALUES (?, ?, ?, ?,?);`, data);
+    alert('Produit ajouté avec succès !');
+  } catch (error) {
+    console.error(error);
+    alert('Erreur lors de l’ajout du produit.');
+  }
+};
+
+export const UpdateProduct = async(dataBase, data = []) => {
+  try {
+    await dataBase.runAsync(`
+      UPDATE products 
+      SET name = ?, stock = ?, description = ?, image = ?, amount = ?
+      WHERE id = ?;
+    `, data);
+    alert('Produit modifier avec succès !');
+  } catch (error) {
+    console.error(error);
+    alert('Erreur lors de l’ajout du produit.');
+  }
+};
+
+export const DeleteProductInSQLite = async(dataBase, id) => {
+  try {
+    await dataBase.runAsync("DELETE FROM products WHERE id = ?", id);
+    alert('Produit modifier avec succès !');
+  } catch (error) {
+    console.error(error);
+    alert('Erreur lors de l’ajout du produit.');
+  }
+}
+
+

@@ -1,49 +1,39 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
   SafeAreaView,
-  View,
   Text,
   TouchableOpacity,
-  FlatList,
-  Image,
   StyleSheet,
   StatusBar,
-  Alert,
-} from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { getProductInDataBase } from '../services/dataBaseServices';
-import { useSQLiteContext } from 'expo-sqlite';
-import ListProductComponent from '../src/components/ListProductComponent';
-import { SQLiteService } from '../services/dataBaseServices';
+} from "react-native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useSQLiteContext } from "expo-sqlite";
+import AddProduct from "../src/Products/addProduct";
+import ListProduct from "../src/Products/ListProduct";
+import { ButtonXl } from "../src/components/ButtonsComponent";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [products, setProducts] = useState([]);
   const dataBase = useSQLiteContext();
+
   useFocusEffect(
     useCallback(() => {
-      (async() => {
-        const getProductInDB = await dataBase.getAllAsync("SELECT * FROM products");
+      (async () => {
+        const getProductInDB = await dataBase.getAllAsync(
+          "SELECT * FROM products"
+        );
         setProducts(getProductInDB);
-      })()
+      })();
     }, [])
-  )
-  
-  const handleClick = () => {
-    navigation.navigate('AddProduct');
-  };
-    
+  );
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#2979FF" barStyle="light-content" />
+      <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
+      <Text style={styles.header}>📦 Gestion de Stock</Text>
 
-      <Text style={styles.header}>📦 Stock Manager</Text>
-
-      <TouchableOpacity style={styles.addButton} onPress={handleClick} activeOpacity={0.9}>
-        <Text style={styles.addButtonText}>+ Add Product</Text>
-      </TouchableOpacity>
-
-      <ListProductComponent products={products} />
+      <ButtonXl onPress={() => {AddProduct({navigation})}} label="+ Ajouter un produit" bg="#3498DB"/>
+      <ListProduct products={products} />
     </SafeAreaView>
   );
 };
@@ -51,35 +41,33 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  headerContainer: {
+    backgroundColor: "#ECF0F1",
     padding: 20,
-    paddingTop: 40,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 10,
   },
   header: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "700",
+    color: "#2C3E50",
+    textAlign: "center",
+    marginVertical: 20,
   },
   addButton: {
-    backgroundColor: '#2979FF',
-    margin: 20,
+    backgroundColor: "#3498DB",
     paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 3,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
   },
   addButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "600",
   },
-  
-  
 });
 
 export default HomeScreen;
