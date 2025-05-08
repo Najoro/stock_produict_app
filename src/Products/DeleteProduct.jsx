@@ -18,7 +18,7 @@ const DeleteProduct = ({ id, dataBase, goHome }) => {
               await DeleteProductInSQLite(dataBase, id) 
               goHome();
             } catch (e) {
-              console.log("Erreur lors de la suppression :", e);
+              Alert.alert("Erreur lors de la suppression :", e);
             }
           }
         }

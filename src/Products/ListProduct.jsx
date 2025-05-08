@@ -49,7 +49,6 @@ const ListProduct = ({ products }) => {
   const renderItem = ({ item }) => {
     return <EachProductComponent item={item} />;
   };
-  console.log(products);
   if (!products || products.length === 0) {
     // 👉 Si aucun produit
     return (

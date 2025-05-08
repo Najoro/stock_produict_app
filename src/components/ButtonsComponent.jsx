@@ -10,6 +10,7 @@ export const ButtonXl = ({onPress, bg="#2979FF" , colorText= "#fff", label="asa"
 };
 
 
+
 const styles = StyleSheet.create({
     addButton: {
       padding: 15,

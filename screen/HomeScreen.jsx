@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
-import AddProduct from "../src/Products/addProduct";
+import AddProduct from "../src/Products/AddProduct";
 import ListProduct from "../src/Products/ListProduct";
 import { ButtonXl } from "../src/components/ButtonsComponent";
 
@@ -32,7 +32,7 @@ const HomeScreen = () => {
       <StatusBar backgroundColor="#2C3E50" barStyle="light-content" />
       <Text style={styles.header}>📦 Gestion de Stock</Text>
 
-      <ButtonXl onPress={() => {AddProduct({navigation})}} label="+ Ajouter un produit" bg="#3498DB"/>
+      <ButtonXl onPress={() => {navigation.navigate("formScreen")}} label="+ Ajouter un produit" bg="#3498DB"/>
       <ListProduct products={products} />
     </SafeAreaView>
   );
